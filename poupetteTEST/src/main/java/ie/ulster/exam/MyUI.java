@@ -26,34 +26,91 @@ import com.vaadin.ui.VerticalLayout;
 @Theme("mytheme")
 public class MyUI extends UI {
 
-    @Override
+   @Override
     protected void init(VaadinRequest vaadinRequest) {
-        final VerticalLayout layout = new VerticalLayout();
-        String connectionString = "jdbc:sqlserver://poupettedb.database.windows.net:1433;"+
-                                    "database=poupette3db;user=B00766816@poupettedb;" +
-                                    "password=DB@iku6Chot!;encrypt=true;"+
-                                    "trustServerCertificate=false"+
-                                    "hostNameInCertificate=*.database.windows.net;"+
-                                    "loginTimeout=30;";
-
-	// Create the connection object
-	Connection connection = null;  
-
         
-      /*  final TextField name = new TextField();
-        name.setCaption("Type your name here:");
+        // Create the connection object
+        Connection connection = null;  
+         String connectionString = "jdbc:sqlserver://poupettedb.database.windows.net:1433;database=poupette3db;user=B00766816@poupettedb;password=DB@iku6Chot!;encrypt=true;trustServerCertificate=false;hostNameInCertificate=*.database.windows.net;loginTimeout=30;";
+        
+         final VerticalLayout layout = new VerticalLayout();
+         HorizontalLayout topRow = new HorizontalLayout ();
+         final TextField name = new TextField ();
+         name.setCaption ("Type your name here");
 
+         Label logo  = new Label ("<H1> Marty Party Planners </H1> <p/> <h3>Please enter the details below and click Book </h3>");
+         logo.setContentMode (com.vaadin.shared.ui.ContentMode.HTML);
+        
+         //Label number = new Label ("Student No");
+
+         final Slider amountSlider = new Slider ("How many invited", 10, 300);
+            amountSlider.setWidth("500px");
+
+        final ComboBox <String> children = new ComboBox<String>();
+         children.setCaption("Are children attending");
+        children.setItems ("infant", "adult", "minor");
+        
         Button button = new Button("Click Me");
-        button.addClickListener(e -> {
-            layout.addComponent(new Label("Thanks " + name.getValue() 
-                    + ", it works!"));
+        button.addClickListener (e -> {
+            layout.addComponent(new Label ("Thanks "+ name.getValue() + "it works!"));
         });
-        
-        layout.addComponents(name, button);
-        */
-        
-        setContent(layout);
-    }
+
+       // final Label vertvalue = new Label ();
+
+        //Label studentNo = new Label ("B00766816");
+
+        Label status = new Label ("Your party is not booked yet");
+
+       
+
+
+    try 
+{
+	// Connect with JDBC driver to a database
+    connection = DriverManager.getConnection(connectionString);
+    // Add a label to the web app with the message and name of the database we connected to 
+	//layout.addComponent(new Label("Connected to database: " + connection.getCatalog()));
+   
+    ResultSet rs = connection.createStatement().executeQuery("SELECT * FROM room;");
+    List <Rooms> roomsList = new ArrayList <Rooms>();
+    while (rs.next()) {
+        roomsList.add (new Rooms (rs.getString ("room"),
+                                    rs.getInt("capacity"),
+                                    rs.getString("feature"),
+                                    rs.getBoolean("alcohol")));
+
+    }//while
+    
+    // Add my component, grid is templated with Customer
+    Grid <Rooms> myGrid = new Grid <> ();
+    // Set the items (List)
+    myGrid.setItems (roomsList);
+    // Configure the order and the caption of the grid
+    myGrid.addColumn (Rooms::getRoom).setCaption("Room");
+    myGrid.addColumn(Rooms::getCapacity).setCaption("Capacity");
+    myGrid.addColumn(Rooms::getFeature).setCaption("Feature");
+    myGrid.addColumn(Rooms::getAlcohol).setCaption ("Alcohol");
+
+    // Add the grid to the list
+    layout.addComponent(myGrid);
+
+
+
+
+} 
+
+
+
+
+catch (Exception e) 
+{
+	// This will show an error message if something went wrong
+	layout.addComponent(new Label(e.getMessage()));
+}
+
+setContent(layout);
+
+}
 
     @WebServlet(urlPatterns = "/*", name = "MyUIServlet", asyncSupported = true)
     @VaadinServletConfiguration(ui = MyUI.class, productionMode = false)

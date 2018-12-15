@@ -4,14 +4,14 @@ class Rooms {
     private String room;
     private int capacity;
     private String feature;
-    private boolean alcohol_allowed;
+    private boolean alcohol;
 
-    Rooms (String room, int capacity, String feature, boolean alcohol_allowed)
+    Rooms (String room, int capacity, String feature, boolean alcohol)
     {
         this.room = room;
         this.capacity = capacity;
         this.feature = feature;
-        this.alcohol_allowed = alcohol_allowed;
+        this.alcohol = alcohol;
     }
 	
 	public String getRoom() {
@@ -37,11 +37,11 @@ class Rooms {
 	
 	//public void setsetFeature(String feature) {
 	//	this.feature = feature;
-	//}
+     // }
 
 
-	public boolean alcohol_allowed() {
-		return alcohol_allowed;
+	public boolean getAlcohol() {
+		return alcohol;
 	}
 	
 	//public void setAlcohol_allowed (boolean alcohol_allowed {

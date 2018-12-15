@@ -36,29 +36,22 @@ public class MyUI extends UI {
          final VerticalLayout layout = new VerticalLayout();
          HorizontalLayout topRow = new HorizontalLayout ();
          final TextField name = new TextField ();
-         name.setCaption ("Type your name here");
+         name.setCaption ("Name of party");
 
          Label logo  = new Label ("<H1> Marty Party Planners </H1> <p/> <h3>Please enter the details below and click Book </h3>");
          logo.setContentMode (com.vaadin.shared.ui.ContentMode.HTML);
         
-         //Label number = new Label ("Student No");
+        
 
-         final Slider amountSlider = new Slider ("How many invited", 10, 300);
+         final Slider amountSlider = new Slider ("How many people are invited", 10, 300);
             amountSlider.setWidth("500px");
 
         final ComboBox <String> children = new ComboBox<String>();
          children.setCaption("Are children attending");
-        children.setItems ("infant", "adult", "minor");
+        children.setItems ("yes", "no");
         
-        Button button = new Button("Click Me");
-        button.addClickListener (e -> {
-            layout.addComponent(new Label ("Thanks "+ name.getValue() + "it works!"));
-        });
-
-       // final Label vertvalue = new Label ();
-
-        //Label studentNo = new Label ("B00766816");
-
+        Button button = new Button("Book");
+       
         Label status = new Label ("Your party is not booked yet");
 
        
@@ -79,7 +72,7 @@ public class MyUI extends UI {
                                     rs.getString("feature"),
                                     rs.getBoolean("alcohol_allowed")));
 
-    }//while
+    }//while//here the listed names have to be EXACTLY SAME as SQL columns
     
     // Add my component, grid is templated with Customer
     Grid <Rooms> myGrid = new Grid <> ();
@@ -90,14 +83,53 @@ public class MyUI extends UI {
     myGrid.addColumn(Rooms::getCapacity).setCaption("Capacity");
     myGrid.addColumn(Rooms::getFeature).setCaption("Feature");
     myGrid.addColumn(Rooms::getAlcohol).setCaption ("Alcohol");
-
+    myGrid.setSizeFull();
+    myGrid.setSelectionMode(Grid.SelectionMode.MULTI);
+    
     // Add the grid to the list
-    layout.addComponent(myGrid);
+    //layout.addComponent(myGrid);
 
+    button.addClickListener (e -> {
+    
+        if(name.getValue().isEmpty()) {
+            status.setValue("<strong>Please enter your party name</strong>");
+            return;
+        }
+        if (children.getValue () == null){
+            status.setValue("<strong>Please confirm if children are attending</strong>");
+            return;
+        }
 
+        Set <Rooms> selected = myGrid.getSelectedItems();
 
+        if (selected.size() == 0) {
+            status.setValue("<strong>Please select at least one room</strong>");
+            return;
+        }
 
-} 
+        for (Rooms r : selected) {
+            if (r.getAlcohol()==true && children.getValue().equalsIgnoreCase("yes")) {
+                status.setValue ("<strong>You cannot select any rooms serving alcohol if children are attending.</strong>");
+                return;
+            }
+        }
+
+            int totalCapacity = 0;
+            for (Rooms r : selected) {
+                totalCapacity = totalCapacity + r.getCapacity();
+            }
+
+            if (amountSlider.getValue().intValue() > totalCapacity) {
+                status.setValue("<strong>You have selected rooms with a max capacity of " +
+                totalCapacity + " which is not enough tp hold " + amountSlider.getValue().intValue() + ".</strong>");
+                return;}
+            
+    });
+
+    topRow.addComponents (name, amountSlider, children );
+    layout.addComponents (logo, topRow, button, status, myGrid);
+    
+}//try
 
 
 
@@ -105,15 +137,14 @@ public class MyUI extends UI {
 catch (Exception e) 
 {
 	// This will show an error message if something went wrong
-	layout.addComponent(new Label(e.getMessage()));
+    layout.addComponent(new Label(e.getMessage()));
 }
 
 setContent(layout);
-
 }
 
-    @WebServlet(urlPatterns = "/*", name = "MyUIServlet", asyncSupported = true)
-    @VaadinServletConfiguration(ui = MyUI.class, productionMode = false)
-    public static class MyUIServlet extends VaadinServlet {
-    }
+@WebServlet(urlPatterns = "/*", name = "MyUIServlet", asyncSupported = true)
+@VaadinServletConfiguration(ui = MyUI.class, productionMode = false)
+public static class MyUIServlet extends VaadinServlet {
+}
 }

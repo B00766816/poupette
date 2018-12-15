@@ -77,7 +77,7 @@ public class MyUI extends UI {
         roomsList.add (new Rooms (rs.getString ("room"),
                                     rs.getInt("capacity"),
                                     rs.getString("feature"),
-                                    rs.getBoolean("alcohol")));
+                                    rs.getBoolean("alcohol_allowed")));
 
     }//while
     
